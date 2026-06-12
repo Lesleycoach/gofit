@@ -2,116 +2,329 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FitCoach SPA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesley Fitness Coach</title>
+
 <style>
-body{font-family:Arial;background:#0f172a;color:white;margin:0}
-.container{max-width:1000px;margin:auto;padding:20px}
-.card{background:#1e293b;padding:20px;border-radius:16px;margin-bottom:20px}
-h1,h2{text-align:center}
-input,select,button{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none}
-button{background:#fbbf24;font-weight:bold;cursor:pointer}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.item{background:#334155;padding:10px;border-radius:10px;margin-top:10px}
-.stat{font-size:28px;text-align:center;color:#fbbf24}
-@media(max-width:768px){.grid{grid-template-columns:1fr}}
+body{
+font-family:Arial;
+background:#111827;
+color:white;
+margin:0;
+}
+
+.header{
+background:#000;
+padding:20px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+max-width:1000px;
+margin:auto;
+}
+
+.card{
+background:#1f2937;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+}
+
+h2{
+margin-top:0;
+color:#fbbf24;
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:8px;
+border:none;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+background:#fbbf24;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.item{
+background:#374151;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+}
+
+.stat{
+font-size:30px;
+font-weight:bold;
+color:#fbbf24;
+text-align:center;
+}
+
+.badge{
+display:inline-block;
+background:#22c55e;
+padding:8px 15px;
+border-radius:20px;
+margin:5px;
+}
 </style>
+
 </head>
 <body>
-<div class="container">
-<h1>🏋️ FitCoach Member System</h1>
 
-<div class="grid">
+<div class="header">
+<h1>🏋️ Lesley Fitness Coach</h1>
+<p>會員健身管理系統</p>
+</div>
+
+<div class="container">
 
 <div class="card">
 <h2>🍱 飲食紀錄</h2>
+
 <input id="food" placeholder="食物名稱">
-<input id="calories" type="number" placeholder="熱量 kcal">
-<button onclick="addMeal()">新增餐點</button>
-<div id="meals"></div>
+
+<input id="calories" type="number" placeholder="熱量">
+
+<button onclick="addFood()">
+新增餐點
+</button>
+
+<div id="foodList"></div>
+
 </div>
 
 <div class="card">
-<h2>🔥 今日熱量</h2>
-<div class="stat"><span id="total">0</span> kcal</div>
+
+<h2>🔥 今日總熱量</h2>
+
+<div class="stat">
+<span id="totalCalories">0</span> kcal
+</div>
+
 </div>
 
 <div class="card">
-<h2>💪 健身目標</h2>
-<select id="goal" onchange="planWorkout()">
-<option value="">請選擇</option>
+
+<h2>💪 健身課表</h2>
+
+<select id="goal" onchange="showWorkout()">
+
+<option value="">選擇目標</option>
 <option value="fat">減脂</option>
 <option value="muscle">增肌</option>
-<option value="fit">健康維持</option>
+<option value="maintain">維持體態</option>
+
 </select>
+
 <div id="workout"></div>
+
 </div>
 
 <div class="card">
+
 <h2>📅 上課簽到</h2>
+
 <input id="course" placeholder="課程名稱">
-<button onclick="checkIn()">簽到</button>
+
+<button onclick="checkin()">
+我要簽到
+</button>
+
 <div id="attendance"></div>
+
 </div>
 
 <div class="card">
-<h2>⚖️ 體重紀錄</h2>
+
+<h2>⚖️ 體重追蹤</h2>
+
 <input id="weight" type="number" placeholder="體重 kg">
-<button onclick="saveWeight()">紀錄體重</button>
-<div id="weights"></div>
+
+<button onclick="saveWeight()">
+儲存體重
+</button>
+
+<div id="weightList"></div>
+
 </div>
 
 <div class="card">
+
 <h2>🏆 連續打卡</h2>
-<div class="stat"><span id="streak">0</span> 天</div>
-<button onclick="dailyCheckin()">今日打卡</button>
+
+<div class="stat">
+🔥 <span id="streak">0</span> 天
+</div>
+
+<button onclick="dailyCheckin()">
+今日打卡
+</button>
+
+<div id="badges">
+<span class="badge">新手會員</span>
 </div>
 
 </div>
+
 </div>
 
 <script>
-let total=0;
-let streak=localStorage.getItem('streak')||0;
-document.getElementById('streak').innerText=streak;
 
-function addMeal(){
- let food=foodInput=document.getElementById('food').value;
- let cal=parseInt(document.getElementById('calories').value||0);
- if(!food||!cal)return;
- total+=cal;
- document.getElementById('total').innerText=total;
- document.getElementById('meals').innerHTML+=`<div class="item">${food} - ${cal} kcal</div>`;
+let totalCalories=
+Number(localStorage.getItem('totalCalories'))||0;
+
+let streak=
+Number(localStorage.getItem('streak'))||0;
+
+document.getElementById('totalCalories').innerText=
+totalCalories;
+
+document.getElementById('streak').innerText=
+streak;
+
+function addFood(){
+
+let food=
+document.getElementById('food').value;
+
+let calories=
+Number(document.getElementById('calories').value);
+
+if(!food || !calories) return;
+
+totalCalories+=calories;
+
+localStorage.setItem(
+'totalCalories',
+totalCalories
+);
+
+document.getElementById('totalCalories').innerText=
+totalCalories;
+
+document.getElementById('foodList').innerHTML +=
+`<div class="item">${food} - ${calories} kcal</div>`;
+
 }
 
-function planWorkout(){
- const g=document.getElementById('goal').value;
- let txt='';
- if(g==='fat') txt='🏃 有氧30分鐘 + 全身訓練';
- if(g==='muscle') txt='💪 胸背腿分化 + 高蛋白';
- if(g==='fit') txt='⚖️ 每週3次重訓 + 2次有氧';
- document.getElementById('workout').innerHTML=`<div class="item">${txt}</div>`;
+function showWorkout(){
+
+let goal=
+document.getElementById('goal').value;
+
+let text='';
+
+if(goal==='fat'){
+text='🏃 有氧30分鐘 + 全身訓練';
 }
 
-function checkIn(){
- const c=document.getElementById('course').value;
- if(!c)return;
- const d=new Date().toLocaleDateString();
- document.getElementById('attendance').innerHTML+=`<div class="item">✅ ${d} - ${c}</div>`;
+if(goal==='muscle'){
+text='💪 胸背腿分化訓練';
+}
+
+if(goal==='maintain'){
+text='⚖️ 每週3次重訓 + 2次有氧';
+}
+
+document.getElementById('workout').innerHTML=
+`<div class="item">${text}</div>`;
+
+}
+
+function checkin(){
+
+let course=
+document.getElementById('course').value;
+
+if(!course) return;
+
+let date=
+new Date().toLocaleString();
+
+document.getElementById('attendance').innerHTML +=
+`<div class="item">✅ ${date}<br>${course}</div>`;
+
 }
 
 function saveWeight(){
- const w=document.getElementById('weight').value;
- if(!w)return;
- const d=new Date().toLocaleDateString();
- document.getElementById('weights').innerHTML+=`<div class="item">${d}：${w} kg</div>`;
+
+let weight=
+document.getElementById('weight').value;
+
+if(!weight) return;
+
+let date=
+new Date().toLocaleDateString();
+
+document.getElementById('weightList').innerHTML +=
+`<div class="item">${date} - ${weight} kg</div>`;
+
 }
 
 function dailyCheckin(){
- streak++;
- localStorage.setItem('streak',streak);
- document.getElementById('streak').innerText=streak;
+
+streak++;
+
+localStorage.setItem(
+'streak',
+streak
+);
+
+document.getElementById('streak').innerText=
+streak;
+
+if(streak===7){
+
+document.getElementById('badges').innerHTML +=
+'<span class="badge">🔥 7天達成</span>';
+
 }
+
+if(streak===30){
+
+document.getElementById('badges').innerHTML +=
+'<span class="badge">🏅 30天達成</span>';
+
+}
+
+}
+
 </script>
+
 </body>
 </html>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZ8UU8Bia-1mfhD7GIHhpsYxVf0k0sNg8",
+    authDomain: "lesley-fitness.firebaseapp.com",
+    databaseURL: "https://lesley-fitness-default-rtdb.firebaseio.com",
+    projectId: "lesley-fitness",
+    storageBucket: "lesley-fitness.firebasestorage.app",
+    messagingSenderId: "1044813006126",
+    appId: "1:1044813006126:web:e7facd782c456eeceaa6bf",
+    measurementId: "G-KF527PQFFV"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
