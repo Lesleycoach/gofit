@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FitCoach SPA</title>
+<style>
+body{font-family:Arial;background:#0f172a;color:white;margin:0}
+.container{max-width:1000px;margin:auto;padding:20px}
+.card{background:#1e293b;padding:20px;border-radius:16px;margin-bottom:20px}
+h1,h2{text-align:center}
+input,select,button{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:none}
+button{background:#fbbf24;font-weight:bold;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.item{background:#334155;padding:10px;border-radius:10px;margin-top:10px}
+.stat{font-size:28px;text-align:center;color:#fbbf24}
+@media(max-width:768px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🏋️ FitCoach Member System</h1>
+
+<div class="grid">
+
+<div class="card">
+<h2>🍱 飲食紀錄</h2>
+<input id="food" placeholder="食物名稱">
+<input id="calories" type="number" placeholder="熱量 kcal">
+<button onclick="addMeal()">新增餐點</button>
+<div id="meals"></div>
+</div>
+
+<div class="card">
+<h2>🔥 今日熱量</h2>
+<div class="stat"><span id="total">0</span> kcal</div>
+</div>
+
+<div class="card">
+<h2>💪 健身目標</h2>
+<select id="goal" onchange="planWorkout()">
+<option value="">請選擇</option>
+<option value="fat">減脂</option>
+<option value="muscle">增肌</option>
+<option value="fit">健康維持</option>
+</select>
+<div id="workout"></div>
+</div>
+
+<div class="card">
+<h2>📅 上課簽到</h2>
+<input id="course" placeholder="課程名稱">
+<button onclick="checkIn()">簽到</button>
+<div id="attendance"></div>
+</div>
+
+<div class="card">
+<h2>⚖️ 體重紀錄</h2>
+<input id="weight" type="number" placeholder="體重 kg">
+<button onclick="saveWeight()">紀錄體重</button>
+<div id="weights"></div>
+</div>
+
+<div class="card">
+<h2>🏆 連續打卡</h2>
+<div class="stat"><span id="streak">0</span> 天</div>
+<button onclick="dailyCheckin()">今日打卡</button>
+</div>
+
+</div>
+</div>
+
+<script>
+let total=0;
+let streak=localStorage.getItem('streak')||0;
+document.getElementById('streak').innerText=streak;
+
+function addMeal(){
+ let food=foodInput=document.getElementById('food').value;
+ let cal=parseInt(document.getElementById('calories').value||0);
+ if(!food||!cal)return;
+ total+=cal;
+ document.getElementById('total').innerText=total;
+ document.getElementById('meals').innerHTML+=`<div class="item">${food} - ${cal} kcal</div>`;
+}
+
+function planWorkout(){
+ const g=document.getElementById('goal').value;
+ let txt='';
+ if(g==='fat') txt='🏃 有氧30分鐘 + 全身訓練';
+ if(g==='muscle') txt='💪 胸背腿分化 + 高蛋白';
+ if(g==='fit') txt='⚖️ 每週3次重訓 + 2次有氧';
+ document.getElementById('workout').innerHTML=`<div class="item">${txt}</div>`;
+}
+
+function checkIn(){
+ const c=document.getElementById('course').value;
+ if(!c)return;
+ const d=new Date().toLocaleDateString();
+ document.getElementById('attendance').innerHTML+=`<div class="item">✅ ${d} - ${c}</div>`;
+}
+
+function saveWeight(){
+ const w=document.getElementById('weight').value;
+ if(!w)return;
+ const d=new Date().toLocaleDateString();
+ document.getElementById('weights').innerHTML+=`<div class="item">${d}：${w} kg</div>`;
+}
+
+function dailyCheckin(){
+ streak++;
+ localStorage.setItem('streak',streak);
+ document.getElementById('streak').innerText=streak;
+}
+</script>
+</body>
+</html>
