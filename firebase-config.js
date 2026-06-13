@@ -2,7 +2,6 @@
 import { initializeApp } from "https://gstatic.com";
 import { getFirestore, doc, setDoc, updateDoc, arrayUnion } from "https://gstatic.com";
 
-// 請至 Firebase 控制台複製並替換為您的專案設定金鑰
 const firebaseConfig = {
  apiKey: "AIzaSyAAcqYqNg_YGSdyxP62J9h4flBTP_GAYfE",
     authDomain: "lesley-fitness-c5e69.firebaseapp.com",
