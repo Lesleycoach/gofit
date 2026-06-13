@@ -3,114 +3,196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lesley Fitness Coach</title>
+<title>Lesley Fitness</title>
 
 <style>
-body{
-font-family:Arial;
-background:#111827;
-color:white;
+*{
 margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
 }
 
-.header{
-background:#000;
+body{
+background:#FFF8EE;
+color:#5D534A;
 padding:20px;
-text-align:center;
 }
 
 .container{
-padding:20px;
 max-width:1000px;
 margin:auto;
 }
 
-.card{
-background:#1f2937;
-padding:20px;
-border-radius:15px;
+.hero-banner{
+background:linear-gradient(135deg,#DCC7AA,#FFF8EE);
+border-radius:25px;
+padding:40px 20px;
+margin-bottom:25px;
+border:1px solid #F2E9DC;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.hero-content{
+text-align:center;
+}
+
+.hero-icon{
+font-size:70px;
+margin-bottom:10px;
+}
+
+.hero-banner h1{
+font-size:2.5rem;
+color:#8A6F5A;
+margin-bottom:10px;
+}
+
+.hero-banner p{
+color:#A08B7A;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
 margin-bottom:20px;
 }
 
-h2{
-margin-top:0;
-color:#fbbf24;
+.stat-card{
+background:#FFFCF7;
+padding:20px;
+border-radius:18px;
+border:1px solid #F2E9DC;
+text-align:center;
+box-shadow:0 8px 25px rgba(148,127,107,.08);
 }
 
-input,select{
+.stat-number{
+font-size:30px;
+font-weight:bold;
+color:#B88E68;
+}
+
+.card{
+background:#FFFCF7;
+border:1px solid #F2E9DC;
+border-radius:20px;
+padding:25px;
+margin-bottom:20px;
+box-shadow:0 8px 25px rgba(148,127,107,.08);
+}
+
+.card h2{
+color:#9C7B63;
+margin-bottom:15px;
+}
+
+input,
+select{
 width:100%;
-padding:12px;
-margin-top:10px;
-border-radius:8px;
-border:none;
+height:54px;
+padding:0 15px;
+margin-bottom:12px;
+border-radius:12px;
+border:1px solid #E8DDD0;
+background:#FFFDF8;
+font-size:15px;
 }
 
 button{
 width:100%;
+height:54px;
+border:none;
+border-radius:12px;
+background:#C9A27E;
+color:white;
+font-size:15px;
+font-weight:600;
+cursor:pointer;
+transition:.3s;
+}
+
+button:hover{
+background:#B88E68;
+}
+
+.record{
+background:#FAF3EA;
 padding:12px;
 margin-top:10px;
-background:#fbbf24;
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
+border-radius:10px;
+border-left:4px solid #C9A27E;
 }
 
-.item{
-background:#374151;
-padding:10px;
-margin-top:10px;
-border-radius:8px;
+@media(max-width:768px){
+.stats{
+grid-template-columns:1fr;
 }
-
-.stat{
-font-size:30px;
-font-weight:bold;
-color:#fbbf24;
-text-align:center;
-}
-
-.badge{
-display:inline-block;
-background:#22c55e;
-padding:8px 15px;
-border-radius:20px;
-margin:5px;
 }
 </style>
-
 </head>
-<body>
 
-<div class="header">
-<h1>🏋️ Lesley Fitness Coach</h1>
-<p>會員健身管理系統</p>
-</div>
+<body>
 
 <div class="container">
 
+<div class="hero-banner">
+<div class="hero-content">
+<div class="hero-icon">🏋️‍♂️</div>
+<h1>Lesley Fitness</h1>
+<p>飲食管理 × 健身追蹤 × 健康生活</p>
+</div>
+</div>
+
+<div class="stats">
+
+<div class="stat-card">
+<div class="stat-number" id="totalCalories">0</div>
+<div>今日熱量</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-number" id="weightDisplay">0</div>
+<div>目前體重</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-number" id="streak">0</div>
+<div>連續打卡</div>
+</div>
+
+</div>
+
 <div class="card">
+
+<h2>👤 會員資料</h2>
+
+<input id="memberName" placeholder="會員姓名">
+
+<select>
+<option>選擇健身目標</option>
+<option>減脂</option>
+<option>增肌</option>
+<option>體態雕塑</option>
+<option>健康維持</option>
+</select>
+
+</div>
+
+<div class="card">
+
 <h2>🍱 飲食紀錄</h2>
 
-<input id="food" placeholder="食物名稱">
+<input id="foodName" placeholder="食物名稱">
 
-<input id="calories" type="number" placeholder="熱量">
+<input id="calories" type="number" placeholder="熱量 (kcal)">
 
-<button onclick="addFood()">
-新增餐點
+<button onclick="addMeal()">
+儲存飲食紀錄
 </button>
 
-<div id="foodList"></div>
-
-</div>
-
-<div class="card">
-
-<h2>🔥 今日總熱量</h2>
-
-<div class="stat">
-<span id="totalCalories">0</span> kcal
-</div>
+<div id="mealList"></div>
 
 </div>
 
@@ -118,30 +200,30 @@ margin:5px;
 
 <h2>💪 健身課表</h2>
 
-<select id="goal" onchange="showWorkout()">
+<select>
 
-<option value="">選擇目標</option>
-<option value="fat">減脂</option>
-<option value="muscle">增肌</option>
-<option value="maintain">維持體態</option>
+<option>選擇今日課表</option>
+<option>上肢訓練</option>
+<option>下肢訓練</option>
+<option>胸肌訓練</option>
+<option>背肌訓練</option>
+<option>肩膀訓練</option>
+<option>手臂訓練</option>
+<option>腿部訓練</option>
+<option>核心訓練</option>
+<option>全身循環訓練</option>
 
 </select>
 
-<div id="workout"></div>
+<input placeholder="訓練動作">
 
-</div>
+<input type="number" placeholder="組數">
 
-<div class="card">
+<input type="number" placeholder="次數">
 
-<h2>📅 上課簽到</h2>
-
-<input id="course" placeholder="課程名稱">
-
-<button onclick="checkin()">
-我要簽到
+<button>
+完成今日訓練
 </button>
-
-<div id="attendance"></div>
 
 </div>
 
@@ -149,7 +231,11 @@ margin:5px;
 
 <h2>⚖️ 體重追蹤</h2>
 
-<input id="weight" type="number" placeholder="體重 kg">
+<input
+id="weight"
+type="number"
+step="0.1"
+placeholder="目前體重 (kg)">
 
 <button onclick="saveWeight()">
 儲存體重
@@ -161,19 +247,19 @@ margin:5px;
 
 <div class="card">
 
-<h2>🏆 連續打卡</h2>
-
-<div class="stat">
-🔥 <span id="streak">0</span> 天
-</div>
+<h2>📅 每日打卡</h2>
 
 <button onclick="dailyCheckin()">
 今日打卡
 </button>
 
-<div id="badges">
-<span class="badge">新手會員</span>
-</div>
+<div id="checkinList"></div>
+
+<br><br>
+
+<button onclick="submitAll()">
+送出今日紀錄
+</button>
 
 </div>
 
@@ -181,122 +267,83 @@ margin:5px;
 
 <script>
 
-let totalCalories=
-Number(localStorage.getItem('totalCalories'))||0;
+let totalCalories = 0;
+let streak = 0;
 
-let streak=
-Number(localStorage.getItem('streak'))||0;
+function addMeal(){
 
-document.getElementById('totalCalories').innerText=
-totalCalories;
+const food=document.getElementById("foodName").value;
+const calories=Number(document.getElementById("calories").value);
 
-document.getElementById('streak').innerText=
-streak;
-
-function addFood(){
-
-let food=
-document.getElementById('food').value;
-
-let calories=
-Number(document.getElementById('calories').value);
-
-if(!food || !calories) return;
-
-totalCalories+=calories;
-
-localStorage.setItem(
-'totalCalories',
-totalCalories
-);
-
-document.getElementById('totalCalories').innerText=
-totalCalories;
-
-document.getElementById('foodList').innerHTML +=
-`<div class="item">${food} - ${calories} kcal</div>`;
-
+if(!food || !calories){
+alert("請輸入食物名稱與熱量");
+return;
 }
 
-function showWorkout(){
+totalCalories += calories;
 
-let goal=
-document.getElementById('goal').value;
+document.getElementById("totalCalories").innerText=totalCalories;
 
-let text='';
+document.getElementById("mealList").innerHTML += `
+<div class="record">
+🍽️ ${food} ｜ ${calories} kcal
+</div>
+`;
 
-if(goal==='fat'){
-text='🏃 有氧30分鐘 + 全身訓練';
-}
-
-if(goal==='muscle'){
-text='💪 胸背腿分化訓練';
-}
-
-if(goal==='maintain'){
-text='⚖️ 每週3次重訓 + 2次有氧';
-}
-
-document.getElementById('workout').innerHTML=
-`<div class="item">${text}</div>`;
-
-}
-
-function checkin(){
-
-let course=
-document.getElementById('course').value;
-
-if(!course) return;
-
-let date=
-new Date().toLocaleString();
-
-document.getElementById('attendance').innerHTML +=
-`<div class="item">✅ ${date}<br>${course}</div>`;
-
+document.getElementById("foodName").value="";
+document.getElementById("calories").value="";
 }
 
 function saveWeight(){
 
-let weight=
-document.getElementById('weight').value;
+const weight=document.getElementById("weight").value;
 
-if(!weight) return;
+if(!weight)return;
 
-let date=
-new Date().toLocaleDateString();
+document.getElementById("weightDisplay").innerText=weight;
 
-document.getElementById('weightList').innerHTML +=
-`<div class="item">${date} - ${weight} kg</div>`;
+document.getElementById("weightList").innerHTML += `
+<div class="record">
+⚖️ ${new Date().toLocaleDateString()} ｜ ${weight} kg
+</div>
+`;
 
+document.getElementById("weight").value="";
 }
 
 function dailyCheckin(){
 
 streak++;
 
-localStorage.setItem(
-'streak',
-streak
+document.getElementById("streak").innerText=streak;
+
+document.getElementById("checkinList").innerHTML += `
+<div class="record">
+✅ ${new Date().toLocaleString()}
+</div>
+`;
+
+}
+
+function submitAll(){
+
+const memberName=
+document.getElementById("memberName").value;
+
+if(!memberName){
+
+alert("請先輸入會員姓名");
+
+return;
+}
+
+alert(
+`✅ 今日紀錄已送出
+
+會員姓名：${memberName}
+
+感謝您的紀錄，持續保持運動習慣！`
 );
-
-document.getElementById('streak').innerText=
-streak;
-
-if(streak===7){
-
-document.getElementById('badges').innerHTML +=
-'<span class="badge">🔥 7天達成</span>';
-
-}
-
-if(streak===30){
-
-document.getElementById('badges').innerHTML +=
-'<span class="badge">🏅 30天達成</span>';
-
-}
 
 }
 
@@ -304,27 +351,3 @@ document.getElementById('badges').innerHTML +=
 
 </body>
 </html>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyAZ8UU8Bia-1mfhD7GIHhpsYxVf0k0sNg8",
-    authDomain: "lesley-fitness.firebaseapp.com",
-    databaseURL: "https://lesley-fitness-default-rtdb.firebaseio.com",
-    projectId: "lesley-fitness",
-    storageBucket: "lesley-fitness.firebasestorage.app",
-    messagingSenderId: "1044813006126",
-    appId: "1:1044813006126:web:e7facd782c456eeceaa6bf",
-    measurementId: "G-KF527PQFFV"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
