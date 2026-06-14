@@ -165,231 +165,246 @@ grid-template-columns:1fr;
 </div>
 
 <div class="card">
-
 <h2>👤 會員資料</h2>
-
 <input id="memberName" placeholder="會員姓名">
-
-<select>
-<option>選擇健身目標</option>
-<option>減脂</option>
-<option>增肌</option>
-<option>體態雕塑</option>
-<option>健康維持</option>
-</select id="goal">
-
+<select id="goal">
+<option value="">選擇健身目標</option>
+<option value="減脂">減脂</option>
+<option value="增肌">增肌</option>
+<option value="體態雕塑">體態雕塑</option>
+<option value="健康維持">健康維持</option>
+</select>
 </div>
 
 <div class="card">
-
 <h2>🍱 飲食紀錄</h2>
-
 <input id="foodName" placeholder="食物名稱">
-
 <input id="calories" type="number" placeholder="熱量 (kcal)">
-
 <button onclick="addMeal()">
 儲存飲食紀錄
 </button>
-<script> async function addMeal(){
-
-const memberName =
-document.getElementById("memberName").value;
-
-const food =
-document.getElementById("foodName").value;
-
-const calories =
-Number(document.getElementById("calories").value);
-
-if(!food || !calories){
-alert("請輸入食物名稱與熱量");
-return;
-}
-
-await addDoc(
-collection(db,"meals"),
-{
-memberName,
-foodName:food,
-calories,
-createdAt:serverTimestamp()
-}
-);
-
-alert("飲食紀錄已儲存");
-
-}
-</script>
-
 <div id="mealList"></div>
-
 </div>
 
 <div class="card">
-
 <h2>💪 健身課表</h2>
-
 <select id="workoutType">
-
-<option>選擇今日課表</option>
-<option>上肢訓練</option>
-<option>下肢訓練</option>
-<option>胸肌訓練</option>
-<option>背肌訓練</option>
-<option>肩膀訓練</option>
-<option>手臂訓練</option>
-<option>腿部訓練</option>
-<option>核心訓練</option>
-<option>全身循環訓練</option>
-
+<option value="">選擇今日課表</option>
+<option value="上肢訓練">上肢訓練</option>
+<option value="下肢訓練">下肢訓練</option>
+<option value="胸肌訓練">胸肌訓練</option>
+<option value="背肌訓練">背肌訓練</option>
+<option value="肩膀訓練">肩膀訓練</option>
+<option value="手臂訓練">手臂訓練</option>
+<option value="腿部訓練">腿部訓練</option>
+<option value="核心訓練">核心訓練</option>
+<option value="全身循環訓練">全身循環訓練</option>
 </select>
-
 <input id="exerciseName" placeholder="訓練動作">
-
-<input id="sets"  type="number" placeholder="組數">
-
-<input id="reps"  type="number" placeholder="次數">
-
+<input id="sets" type="number" placeholder="組數">
+<input id="reps" type="number" placeholder="次數">
 <button onclick="saveWorkout()">
-完成今日訓練
+暫存今日訓練
 </button>
-
+<div id="workoutList"></div>
 </div>
 
 <div class="card">
-
 <h2>⚖️ 體重追蹤</h2>
-
 <input
 id="weight"
 type="number"
 step="0.1"
 placeholder="目前體重 (kg)">
-
 <button onclick="saveWeight()">
 儲存體重
 </button>
-
 <div id="weightList"></div>
-
 </div>
 
 <div class="card">
-
 <h2>📅 每日打卡</h2>
-
 <button onclick="dailyCheckin()">
 今日打卡
 </button>
-
 <div id="checkinList"></div>
 
 <br><br>
 
-<button onclick="submitAll()">
+<button onclick="submitAll()" style="background:#8A6F5A;">
 送出今日紀錄
 </button>
-
 </div>
 
 </div>
 
 <script>
-
+// 全域變數：用來蒐集當前使用者輸入的數據，以便最後打包上傳
 let totalCalories = 0;
 let streak = 0;
+let currentWeight = 0;
+let mealsArray = [];      // 儲存今日所有飲食的陣列
+let workoutsArray = [];   // 儲存今日所有健身課表的陣列
+let hasCheckedIn = false; // 紀錄今日是否已點擊打卡
 
 function addMeal(){
+    const food = document.getElementById("foodName").value;
+    const calories = Number(document.getElementById("calories").value);
 
-const food=document.getElementById("foodName").value;
-const calories=Number(document.getElementById("calories").value);
+    if(!food || !calories){
+        alert("請輸入食物名稱與熱量");
+        return;
+    }
 
-if(!food || !calories){
-alert("請輸入食物名稱與熱量");
-return;
+    totalCalories += calories;
+    document.getElementById("totalCalories").innerText = totalCalories;
+
+    // 將資料暫存到飲食陣列中
+    mealsArray.push({
+        foodName: food,
+        calories: calories
+    });
+
+    document.getElementById("mealList").innerHTML += `
+    <div class="record">
+    🍽️ ${food} ｜ ${calories} kcal
+    </div>
+    `;
+
+    document.getElementById("foodName").value = "";
+    document.getElementById("calories").value = "";
 }
 
-totalCalories += calories;
+// 新增：健身課表按鈕觸發的函式
+function saveWorkout(){
+    const type = document.getElementById("workoutType").value;
+    const exercise = document.getElementById("exerciseName").value;
+    const sets = Number(document.getElementById("sets").value);
+    const reps = Number(document.getElementById("reps").value);
 
-document.getElementById("totalCalories").innerText=totalCalories;
+    if(!type || !exercise || !sets || !reps){
+        alert("請完整填寫今日課表、訓練動作、組數與次數");
+        return;
+    }
 
-document.getElementById("mealList").innerHTML += `
-<div class="record">
-🍽️ ${food} ｜ ${calories} kcal
-</div>
-`;
+    // 將資料暫存到課表陣列中
+    workoutsArray.push({
+        workoutType: type,
+        exerciseName: exercise,
+        sets: sets,
+        reps: reps
+    });
 
-document.getElementById("foodName").value="";
-document.getElementById("calories").value="";
+    document.getElementById("workoutList").innerHTML += `
+    <div class="record">
+    💪 ${type} - ${exercise} ｜ ${sets} 組 × ${reps} 次
+    </div>
+    `;
+
+    document.getElementById("exerciseName").value = "";
+    document.getElementById("sets").value = "";
+    document.getElementById("reps").value = "";
 }
 
 function saveWeight(){
+    const weight = document.getElementById("weight").value;
 
-const weight=document.getElementById("weight").value;
+    if(!weight) {
+        alert("請輸入體重");
+        return;
+    }
 
-if(!weight)return;
+    currentWeight = Number(weight);
+    document.getElementById("weightDisplay").innerText = currentWeight;
 
-document.getElementById("weightDisplay").innerText=weight;
+    document.getElementById("weightList").innerHTML += `
+    <div class="record">
+    ⚖️ ${new Date().toLocaleDateString()} ｜ ${currentWeight} kg
+    </div>
+    `;
 
-document.getElementById("weightList").innerHTML += `
-<div class="record">
-⚖️ ${new Date().toLocaleDateString()} ｜ ${weight} kg
-</div>
-`;
-
-document.getElementById("weight").value="";
+    document.getElementById("weight").value = "";
 }
 
 function dailyCheckin(){
+    if(hasCheckedIn){
+        alert("今日已完成打卡囉！");
+        return;
+    }
+    
+    streak++;
+    hasCheckedIn = true;
 
-streak++;
+    document.getElementById("streak").innerText = streak;
 
-document.getElementById("streak").innerText=streak;
-
-document.getElementById("checkinList").innerHTML += `
-<div class="record">
-✅ ${new Date().toLocaleString()}
-</div>
-`;
-
+    document.getElementById("checkinList").innerHTML += `
+    <div class="record">
+    ✅ ${new Date().toLocaleString()}
+    </div>
+    `;
 }
 
-function submitAll(){
+// 串接 Firebase：打包所有數據並寫入 Firestore
+async function submitAll(){
+    const memberName = document.getElementById("memberName").value;
+    const goal = document.getElementById("goal").value;
 
-const memberName=
-document.getElementById("memberName").value;
+    if(!memberName){
+        alert("請先輸入會員姓名");
+        return;
+    }
 
-if(!memberName){
+    // 1. 打包要上傳至 Firebase 的全體物件資料
+    const dailyRecordData = {
+        memberName: memberName,
+        goal: goal,
+        totalCalories: totalCalories,
+        currentWeight: currentWeight,
+        streak: streak,
+        meals: mealsArray,         // 飲食紀錄陣列
+        workouts: workoutsArray,   // 健身課表陣列
+        isCheckedIn: hasCheckedIn,
+        createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date() // 伺服器時間戳記
+    };
 
-alert("請先輸入會員姓名");
-
-return;
+    // 2. 呼叫 Firebase SDK 寫入名為 "fitness_records" 的資料夾（Collection）
+    try {
+        if (window.db && window.collection && window.addDoc) {
+            const docRef = await window.addDoc(window.collection(window.db, "fitness_records"), dailyRecordData);
+            
+            alert(`✅ 今日紀錄已成功送出並同步至 Firebase！\n紀錄 ID: ${docRef.id}`);
+            
+            // 選擇性：成功送出後，可在此處清空網頁上的暫存資料
+            resetForm();
+        } else {
+            alert("❌ Firebase 尚未載入完成，請稍後再試。");
+        }
+    } catch (error) {
+        console.error("Firebase 寫入錯誤：", error);
+        alert("❌ 送出失敗，請查看瀏覽器主控台 (Console) 錯誤訊息。");
+    }
 }
 
-alert(
-`✅ 今日紀錄已送出
-
-會員姓名：${memberName}
-
-感謝您的紀錄，持續保持運動習慣！`
-);
-
+// 選擇性：送出成功後重置表單
+function resetForm(){
+    totalCalories = 0;
+    currentWeight = 0;
+    mealsArray = [];
+    workoutsArray = [];
+    hasCheckedIn = false;
+    document.getElementById("totalCalories").innerText = "0";
+    document.getElementById("weightDisplay").innerText = "0";
+    document.getElementById("mealList").innerHTML = "";
+    document.getElementById("workoutList").innerHTML = "";
+    document.getElementById("checkinList").innerHTML = "";
+    document.getElementById("memberName").value = "";
+    document.getElementById("goal").value = "";
 }
-
-</script></script>
+</script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-addDoc,
-serverTimestamp
-}
-from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyAZ8UU8Bia-1mfhD7GIHhpsYxVf0k0sNg8",
@@ -403,11 +418,12 @@ appId: "1:1044813006126:web:e7facd782c456eeceaa6bf"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// 將資料庫方法綁定到 window 上，供傳統的 <script> 標籤函式存取
 window.db = db;
 window.collection = collection;
 window.addDoc = addDoc;
 window.serverTimestamp = serverTimestamp;
+</script>
 
-</script></body>
 </body>
 </html>
