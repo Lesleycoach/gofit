@@ -1,29 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyAAcqYqNg_YGSdyxP62J9h4flBTP_GAYfE",
-    authDomain: "lesley-fitness-c5e69.firebaseapp.com",
-    projectId: "lesley-fitness-c5e69",
-    storageBucket: "lesley-fitness-c5e69.firebasestorage.app",
-    messagingSenderId: "1038090805569",
-    appId: "1:1038090805569:web:f8600cb9fc5e0b9819c1c0",
-    measurementId: "G-QZKKLV9B9X"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lesley Fitness</title>
@@ -199,7 +176,7 @@ grid-template-columns:1fr;
 <option>增肌</option>
 <option>體態雕塑</option>
 <option>健康維持</option>
-</select>
+</select id="goal">
 
 </div>
 
@@ -214,6 +191,36 @@ grid-template-columns:1fr;
 <button onclick="addMeal()">
 儲存飲食紀錄
 </button>
+<script> async function addMeal(){
+
+const memberName =
+document.getElementById("memberName").value;
+
+const food =
+document.getElementById("foodName").value;
+
+const calories =
+Number(document.getElementById("calories").value);
+
+if(!food || !calories){
+alert("請輸入食物名稱與熱量");
+return;
+}
+
+await addDoc(
+collection(db,"meals"),
+{
+memberName,
+foodName:food,
+calories,
+createdAt:serverTimestamp()
+}
+);
+
+alert("飲食紀錄已儲存");
+
+}
+</script>
 
 <div id="mealList"></div>
 
@@ -223,7 +230,7 @@ grid-template-columns:1fr;
 
 <h2>💪 健身課表</h2>
 
-<select>
+<select id="workoutType">
 
 <option>選擇今日課表</option>
 <option>上肢訓練</option>
@@ -238,13 +245,13 @@ grid-template-columns:1fr;
 
 </select>
 
-<input placeholder="訓練動作">
+<input id="exerciseName" placeholder="訓練動作">
 
-<input type="number" placeholder="組數">
+<input id="sets"  type="number" placeholder="組數">
 
-<input type="number" placeholder="次數">
+<input id="reps"  type="number" placeholder="次數">
 
-<button>
+<button onclick="saveWorkout()">
 完成今日訓練
 </button>
 
@@ -370,7 +377,37 @@ alert(
 
 }
 
-</script>
+</script></script>
 
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAZ8UU8Bia-1mfhD7GIHhpsYxVf0k0sNg8",
+authDomain: "lesley-fitness.firebaseapp.com",
+projectId: "lesley-fitness",
+storageBucket: "lesley-fitness.firebasestorage.app",
+messagingSenderId: "1044813006126",
+appId: "1:1044813006126:web:e7facd782c456eeceaa6bf"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.serverTimestamp = serverTimestamp;
+
+</script></body>
 </body>
 </html>
