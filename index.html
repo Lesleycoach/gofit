@@ -204,7 +204,7 @@ grid-template-columns:1fr;
 <input id="sets" type="number" placeholder="組數">
 <input id="reps" type="number" placeholder="次數">
 <button onclick="saveWorkout()">
-暫存今日訓練
+儲存今日訓練
 </button>
 <div id="workoutList"></div>
 </div>
@@ -239,7 +239,7 @@ placeholder="目前體重 (kg)">
 </div>
 
 <script>
-// 全域變數：用來蒐集當前使用者輸入的數據，以便最後打包上傳
+// 全域變數
 let totalCalories = 0;
 let streak = 0;
 let currentWeight = 0;
@@ -259,7 +259,6 @@ function addMeal(){
     totalCalories += calories;
     document.getElementById("totalCalories").innerText = totalCalories;
 
-    // 將資料暫存到飲食陣列中
     mealsArray.push({
         foodName: food,
         calories: calories
@@ -275,7 +274,6 @@ function addMeal(){
     document.getElementById("calories").value = "";
 }
 
-// 新增：健身課表按鈕觸發的函式
 function saveWorkout(){
     const type = document.getElementById("workoutType").value;
     const exercise = document.getElementById("exerciseName").value;
@@ -287,7 +285,6 @@ function saveWorkout(){
         return;
     }
 
-    // 將資料暫存到課表陣列中
     workoutsArray.push({
         workoutType: type,
         exerciseName: exercise,
@@ -326,9 +323,10 @@ function saveWeight(){
     document.getElementById("weight").value = "";
 }
 
+// 每日打卡控制（包含重複打卡提示語防呆）
 function dailyCheckin(){
     if(hasCheckedIn){
-        alert("今日已完成打卡囉！");
+        alert("⚠️ 您先前已經成功打卡囉！一天只能打卡一次。");
         return;
     }
     
@@ -339,12 +337,14 @@ function dailyCheckin(){
 
     document.getElementById("checkinList").innerHTML += `
     <div class="record">
-    ✅ ${new Date().toLocaleString()}
+    ✅ ${new Date().toLocaleString()} - 打卡成功
     </div>
     `;
+    
+    alert("🎉 今日打卡成功！太棒了，請繼續保持！");
 }
 
-// 串接 Firebase：打包所有數據並寫入 Firestore
+// 串接 Firebase：打包所有數據並確保安全寫入 Firestore
 async function submitAll(){
     const memberName = document.getElementById("memberName").value;
     const goal = document.getElementById("goal").value;
@@ -354,76 +354,4 @@ async function submitAll(){
         return;
     }
 
-    // 1. 打包要上傳至 Firebase 的全體物件資料
-    const dailyRecordData = {
-        memberName: memberName,
-        goal: goal,
-        totalCalories: totalCalories,
-        currentWeight: currentWeight,
-        streak: streak,
-        meals: mealsArray,         // 飲食紀錄陣列
-        workouts: workoutsArray,   // 健身課表陣列
-        isCheckedIn: hasCheckedIn,
-        createdAt: window.serverTimestamp ? window.serverTimestamp() : new Date() // 伺服器時間戳記
-    };
-
-    // 2. 呼叫 Firebase SDK 寫入名為 "fitness_records" 的資料夾（Collection）
-    try {
-        if (window.db && window.collection && window.addDoc) {
-            const docRef = await window.addDoc(window.collection(window.db, "fitness_records"), dailyRecordData);
-            
-            alert(`✅ 今日紀錄已成功送出並同步至 Firebase！\n紀錄 ID: ${docRef.id}`);
-            
-            // 選擇性：成功送出後，可在此處清空網頁上的暫存資料
-            resetForm();
-        } else {
-            alert("❌ Firebase 尚未載入完成，請稍後再試。");
-        }
-    } catch (error) {
-        console.error("Firebase 寫入錯誤：", error);
-        alert("❌ 送出失敗，請查看瀏覽器主控台 (Console) 錯誤訊息。");
-    }
-}
-
-// 選擇性：送出成功後重置表單
-function resetForm(){
-    totalCalories = 0;
-    currentWeight = 0;
-    mealsArray = [];
-    workoutsArray = [];
-    hasCheckedIn = false;
-    document.getElementById("totalCalories").innerText = "0";
-    document.getElementById("weightDisplay").innerText = "0";
-    document.getElementById("mealList").innerHTML = "";
-    document.getElementById("workoutList").innerHTML = "";
-    document.getElementById("checkinList").innerHTML = "";
-    document.getElementById("memberName").value = "";
-    document.getElementById("goal").value = "";
-}
-</script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyAZ8UU8Bia-1mfhD7GIHhpsYxVf0k0sNg8",
-authDomain: "lesley-fitness.firebaseapp.com",
-projectId: "lesley-fitness",
-storageBucket: "lesley-fitness.firebasestorage.app",
-messagingSenderId: "1044813006126",
-appId: "1:1044813006126:web:e7facd782c456eeceaa6bf"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// 將資料庫方法綁定到 window 上，供傳統的 <script> 標籤函式存取
-window.db = db;
-window.collection = collection;
-window.addDoc = addDoc;
-window.serverTimestamp = serverTimestamp;
-</script>
-
-</body>
-</html>
+    // 安全打包：即使沒填，也確保送出正確的空陣列或預設值，不
