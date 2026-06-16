@@ -111,10 +111,16 @@ font-size:15px;
 font-weight:600;
 cursor:pointer;
 transition:.3s;
+margin-bottom:8px;
 }
 
 button:hover{
 background:#B88E68;
+}
+
+button:disabled{
+background:#D9C4B0;
+cursor:not-allowed;
 }
 
 .record{
@@ -123,6 +129,52 @@ padding:12px;
 margin-top:10px;
 border-radius:10px;
 border-left:4px solid #C9A27E;
+font-size:14px;
+}
+
+.toast{
+position:fixed;
+bottom:30px;
+left:50%;
+transform:translateX(-50%) translateY(100px);
+background:#5D534A;
+color:white;
+padding:14px 24px;
+border-radius:14px;
+font-size:14px;
+z-index:999;
+transition:transform .4s ease;
+box-shadow:0 6px 20px rgba(0,0,0,.2);
+}
+
+.toast.show{
+transform:translateX(-50%) translateY(0);
+}
+
+.status-badge{
+display:inline-block;
+font-size:12px;
+padding:3px 10px;
+border-radius:20px;
+margin-left:8px;
+vertical-align:middle;
+}
+
+.badge-live{
+background:#D4EDDA;
+color:#256339;
+}
+
+.badge-offline{
+background:#F8D7DA;
+color:#6B1E26;
+}
+
+.loading-text{
+color:#A08B7A;
+font-size:13px;
+margin-top:8px;
+text-align:center;
 }
 
 @media(max-width:768px){
@@ -135,218 +187,340 @@ grid-template-columns:1fr;
 
 <body>
 
+<div class="toast" id="toast"></div>
+
 <div class="container">
 
 <div class="hero-banner">
-<div class="hero-content">
-<div class="hero-icon">🏋️‍♂️</div>
-<h1>Lesley Fitness</h1>
-<p>飲食管理 × 健身追蹤 × 健康生活</p>
-</div>
+  <div class="hero-content">
+    <div class="hero-icon">🏋️‍♂️</div>
+    <h1>Lesley Fitness</h1>
+    <p>飲食管理 × 健身追蹤 × 健康生活</p>
+    <p style="margin-top:8px;font-size:13px;">
+      Firebase 狀態：<span id="firebaseStatus" class="status-badge badge-offline">連線中…</span>
+    </p>
+  </div>
 </div>
 
 <div class="stats">
 
-<div class="stat-card">
-<div class="stat-number" id="totalCalories">0</div>
-<div>今日熱量</div>
+  <div class="stat-card">
+    <div class="stat-number" id="totalCalories">0</div>
+    <div>今日熱量 (kcal)</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-number" id="weightDisplay">--</div>
+    <div>目前體重 (kg)</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-number" id="streak">0</div>
+    <div>連續打卡</div>
+  </div>
+
 </div>
 
-<div class="stat-card">
-<div class="stat-number" id="weightDisplay">0</div>
-<div>目前體重</div>
-</div>
-
-<div class="stat-card">
-<div class="stat-number" id="streak">0</div>
-<div>連續打卡</div>
-</div>
-
-</div>
-
+<!-- 會員資料 -->
 <div class="card">
-
-<h2>👤 會員資料</h2>
-
-<input id="memberName" placeholder="會員姓名">
-
-<select>
-<option>選擇健身目標</option>
-<option>減脂</option>
-<option>增肌</option>
-<option>體態雕塑</option>
-<option>健康維持</option>
-</select>
-
+  <h2>👤 會員資料</h2>
+  <input id="memberName" placeholder="會員姓名">
+  <select id="fitnessGoal">
+    <option value="">選擇健身目標</option>
+    <option>減脂</option>
+    <option>增肌</option>
+    <option>體態雕塑</option>
+    <option>健康維持</option>
+  </select>
+  <button onclick="saveMember()">儲存會員資料</button>
 </div>
 
+<!-- 飲食紀錄 -->
 <div class="card">
-
-<h2>🍱 飲食紀錄</h2>
-
-<input id="foodName" placeholder="食物名稱">
-
-<input id="calories" type="number" placeholder="熱量 (kcal)">
-
-<button onclick="addMeal()">
-儲存飲食紀錄
-</button>
-
-<div id="mealList"></div>
-
+  <h2>🍱 飲食紀錄</h2>
+  <input id="foodName" placeholder="食物名稱">
+  <input id="calories" type="number" placeholder="熱量 (kcal)">
+  <button onclick="addMeal()">儲存飲食紀錄</button>
+  <div id="mealList"><div class="loading-text">載入飲食紀錄中…</div></div>
 </div>
 
+<!-- 健身課表 -->
 <div class="card">
-
-<h2>💪 健身課表</h2>
-
-<select>
-
-<option>選擇今日課表</option>
-<option>上肢訓練</option>
-<option>下肢訓練</option>
-<option>胸肌訓練</option>
-<option>背肌訓練</option>
-<option>肩膀訓練</option>
-<option>手臂訓練</option>
-<option>腿部訓練</option>
-<option>核心訓練</option>
-<option>全身循環訓練</option>
-
-</select>
-
-<input placeholder="訓練動作">
-
-<input type="number" placeholder="組數">
-
-<input type="number" placeholder="次數">
-
-<button>
-完成今日訓練
-</button>
-
+  <h2>💪 健身課表</h2>
+  <select id="workoutType">
+    <option value="">選擇今日課表</option>
+    <option>上肢訓練</option>
+    <option>下肢訓練</option>
+    <option>胸肌訓練</option>
+    <option>背肌訓練</option>
+    <option>肩膀訓練</option>
+    <option>手臂訓練</option>
+    <option>腿部訓練</option>
+    <option>核心訓練</option>
+    <option>全身循環訓練</option>
+  </select>
+  <input id="workoutMove" placeholder="訓練動作">
+  <input id="workoutSets" type="number" placeholder="組數">
+  <input id="workoutReps" type="number" placeholder="次數">
+  <button onclick="saveWorkout()">完成今日訓練</button>
+  <div id="workoutList"><div class="loading-text">載入課表紀錄中…</div></div>
 </div>
 
+<!-- 體重追蹤 -->
 <div class="card">
-
-<h2>⚖️ 體重追蹤</h2>
-
-<input
-id="weight"
-type="number"
-step="0.1"
-placeholder="目前體重 (kg)">
-
-<button onclick="saveWeight()">
-儲存體重
-</button>
-
-<div id="weightList"></div>
-
+  <h2>⚖️ 體重追蹤</h2>
+  <input id="weight" type="number" step="0.1" placeholder="目前體重 (kg)">
+  <button onclick="saveWeight()">儲存體重</button>
+  <div id="weightList"><div class="loading-text">載入體重紀錄中…</div></div>
 </div>
 
+<!-- 每日打卡 -->
 <div class="card">
-
-<h2>📅 每日打卡</h2>
-
-<button onclick="dailyCheckin()">
-今日打卡
-</button>
-
-<div id="checkinList"></div>
-
-<br><br>
-
-<button onclick="submitAll()">
-送出今日紀錄
-</button>
-
+  <h2>📅 每日打卡</h2>
+  <button onclick="dailyCheckin()">今日打卡</button>
+  <div id="checkinList"><div class="loading-text">載入打卡紀錄中…</div></div>
+  <br>
+  <button onclick="submitAll()">✅ 送出今日紀錄</button>
 </div>
 
 </div>
+
+<!-- Firebase SDKs (v9 compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
+// ─── Firebase Config ───────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyAAcqYqNg_YGSdyxP62J9h4flBTP_GAYfE",
+  authDomain: "lesley-fitness-c5e69.firebaseapp.com",
+  projectId: "lesley-fitness-c5e69",
+  storageBucket: "lesley-fitness-c5e69.firebasestorage.app",
+  messagingSenderId: "1038090805569",
+  appId: "1:1038090805569:web:f8600cb9fc5e0b9819c1c0",
+  measurementId: "G-QZKKLV9B9X",
+  databaseURL: "https://lesley-fitness-c5e69-default-rtdb.firebaseio.com"
+};
 
+firebase.initializeApp(firebaseConfig);
+const db      = firebase.firestore();        // Firestore
+const rtdb    = firebase.database();         // Realtime Database
+
+// ─── Helpers ──────────────────────────────────────────────────────
+const TODAY = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function formatDate(ts) {
+  if (!ts) return "";
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleString("zh-TW");
+}
+
+// ─── Firebase connection check ─────────────────────────────────────
+const connRef = rtdb.ref(".info/connected");
+connRef.on("value", snap => {
+  const badge = document.getElementById("firebaseStatus");
+  if (snap.val()) {
+    badge.textContent = "已連線 ✓";
+    badge.className = "status-badge badge-live";
+  } else {
+    badge.textContent = "離線";
+    badge.className = "status-badge badge-offline";
+  }
+});
+
+// ─── 1. Member (Firestore) ─────────────────────────────────────────
+async function saveMember() {
+  const name = document.getElementById("memberName").value.trim();
+  const goal = document.getElementById("fitnessGoal").value;
+  if (!name) { alert("請輸入會員姓名"); return; }
+  try {
+    await db.collection("members").doc("profile").set({ name, goal, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    showToast("✅ 會員資料已儲存");
+  } catch(e) { console.error(e); showToast("❌ 儲存失敗：" + e.message); }
+}
+
+async function loadMember() {
+  try {
+    const doc = await db.collection("members").doc("profile").get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById("memberName").value = d.name || "";
+      document.getElementById("fitnessGoal").value = d.goal || "";
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ─── 2. Meals (Firestore) ─────────────────────────────────────────
 let totalCalories = 0;
-let streak = 0;
 
-function addMeal(){
-
-const food=document.getElementById("foodName").value;
-const calories=Number(document.getElementById("calories").value);
-
-if(!food || !calories){
-alert("請輸入食物名稱與熱量");
-return;
+async function addMeal() {
+  const food     = document.getElementById("foodName").value.trim();
+  const calories = Number(document.getElementById("calories").value);
+  if (!food || !calories) { alert("請輸入食物名稱與熱量"); return; }
+  try {
+    await db.collection("meals").add({
+      food, calories,
+      date: TODAY,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("foodName").value  = "";
+    document.getElementById("calories").value  = "";
+    showToast("🍽️ 飲食紀錄已儲存");
+  } catch(e) { console.error(e); showToast("❌ 儲存失敗：" + e.message); }
 }
 
-totalCalories += calories;
-
-document.getElementById("totalCalories").innerText=totalCalories;
-
-document.getElementById("mealList").innerHTML += `
-<div class="record">
-🍽️ ${food} ｜ ${calories} kcal
-</div>
-`;
-
-document.getElementById("foodName").value="";
-document.getElementById("calories").value="";
+function loadMeals() {
+  db.collection("meals")
+    .where("date", "==", TODAY)
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+      totalCalories = 0;
+      let html = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        totalCalories += d.calories;
+        html += `<div class="record">🍽️ ${d.food} ｜ ${d.calories} kcal</div>`;
+      });
+      document.getElementById("totalCalories").innerText = totalCalories;
+      document.getElementById("mealList").innerHTML = html || "<div class='loading-text'>今日尚無飲食紀錄</div>";
+    }, e => { console.error(e); document.getElementById("mealList").innerHTML = "<div class='loading-text'>載入失敗</div>"; });
 }
 
-function saveWeight(){
-
-const weight=document.getElementById("weight").value;
-
-if(!weight)return;
-
-document.getElementById("weightDisplay").innerText=weight;
-
-document.getElementById("weightList").innerHTML += `
-<div class="record">
-⚖️ ${new Date().toLocaleDateString()} ｜ ${weight} kg
-</div>
-`;
-
-document.getElementById("weight").value="";
+// ─── 3. Workouts (Firestore) ──────────────────────────────────────
+async function saveWorkout() {
+  const type = document.getElementById("workoutType").value;
+  const move = document.getElementById("workoutMove").value.trim();
+  const sets = document.getElementById("workoutSets").value;
+  const reps = document.getElementById("workoutReps").value;
+  if (!type || !move) { alert("請選擇課表並輸入訓練動作"); return; }
+  try {
+    await db.collection("workouts").add({
+      type, move,
+      sets: Number(sets) || 0,
+      reps: Number(reps) || 0,
+      date: TODAY,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("workoutMove").value = "";
+    document.getElementById("workoutSets").value = "";
+    document.getElementById("workoutReps").value = "";
+    showToast("💪 訓練紀錄已儲存");
+  } catch(e) { console.error(e); showToast("❌ 儲存失敗：" + e.message); }
 }
 
-function dailyCheckin(){
-
-streak++;
-
-document.getElementById("streak").innerText=streak;
-
-document.getElementById("checkinList").innerHTML += `
-<div class="record">
-✅ ${new Date().toLocaleString()}
-</div>
-`;
-
+function loadWorkouts() {
+  db.collection("workouts")
+    .where("date", "==", TODAY)
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+      let html = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        html += `<div class="record">💪 ${d.type} ｜ ${d.move} ｜ ${d.sets}組 × ${d.reps}次</div>`;
+      });
+      document.getElementById("workoutList").innerHTML = html || "<div class='loading-text'>今日尚無訓練紀錄</div>";
+    }, e => { console.error(e); document.getElementById("workoutList").innerHTML = "<div class='loading-text'>載入失敗</div>"; });
 }
 
-function submitAll(){
-
-const memberName=
-document.getElementById("memberName").value;
-
-if(!memberName){
-
-alert("請先輸入會員姓名");
-
-return;
+// ─── 4. Weight (Firestore) ────────────────────────────────────────
+async function saveWeight() {
+  const weight = document.getElementById("weight").value;
+  if (!weight) return;
+  try {
+    await db.collection("weights").add({
+      weight: Number(weight),
+      date: TODAY,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById("weightDisplay").innerText = weight;
+    document.getElementById("weight").value = "";
+    showToast("⚖️ 體重已儲存");
+  } catch(e) { console.error(e); showToast("❌ 儲存失敗：" + e.message); }
 }
 
-alert(
-`✅ 今日紀錄已送出
-
-會員姓名：${memberName}
-
-感謝您的紀錄，持續保持運動習慣！`
-);
-
+function loadWeights() {
+  db.collection("weights")
+    .orderBy("createdAt", "desc")
+    .limit(7)
+    .onSnapshot(snapshot => {
+      let html = "";
+      let first = true;
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        if (first) {
+          document.getElementById("weightDisplay").innerText = d.weight;
+          first = false;
+        }
+        html += `<div class="record">⚖️ ${d.date} ｜ ${d.weight} kg</div>`;
+      });
+      document.getElementById("weightList").innerHTML = html || "<div class='loading-text'>尚無體重紀錄</div>";
+    }, e => { console.error(e); document.getElementById("weightList").innerHTML = "<div class='loading-text'>載入失敗</div>"; });
 }
 
+// ─── 5. Daily Check-in (Realtime Database) ────────────────────────
+function dailyCheckin() {
+  const checkinRef = rtdb.ref(`checkins/${TODAY}`);
+  checkinRef.once("value", snap => {
+    if (snap.exists()) {
+      showToast("📅 今日已打卡囉！");
+      return;
+    }
+    checkinRef.set({
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      date: TODAY
+    }).then(() => {
+      showToast("✅ 打卡成功！");
+    }).catch(e => { console.error(e); showToast("❌ 打卡失敗：" + e.message); });
+  });
+}
+
+function loadCheckins() {
+  rtdb.ref("checkins").orderByChild("timestamp").limitToLast(10).on("value", snap => {
+    let html = "";
+    let count = 0;
+    const items = [];
+    snap.forEach(child => { items.push(child.val()); });
+    items.reverse().forEach(d => {
+      count++;
+      const ts = d.timestamp ? new Date(d.timestamp).toLocaleString("zh-TW") : d.date;
+      html += `<div class="record">✅ ${ts}</div>`;
+    });
+    document.getElementById("streak").innerText = count;
+    document.getElementById("checkinList").innerHTML = html || "<div class='loading-text'>尚無打卡紀錄</div>";
+  }, e => { console.error(e); document.getElementById("checkinList").innerHTML = "<div class='loading-text'>載入失敗</div>"; });
+}
+
+// ─── 6. Submit All ────────────────────────────────────────────────
+async function submitAll() {
+  const memberName = document.getElementById("memberName").value.trim();
+  if (!memberName) { alert("請先輸入會員姓名"); return; }
+  try {
+    await db.collection("daily_summaries").doc(TODAY).set({
+      memberName,
+      totalCalories,
+      date: TODAY,
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast(`✅ 今日紀錄已送出！感謝 ${memberName} 的堅持 💪`);
+  } catch(e) { console.error(e); showToast("❌ 送出失敗：" + e.message); }
+}
+
+// ─── Init ─────────────────────────────────────────────────────────
+window.onload = () => {
+  loadMember();
+  loadMeals();
+  loadWorkouts();
+  loadWeights();
+  loadCheckins();
+};
 </script>
 
 </body>
