@@ -359,6 +359,7 @@ async function loadMember() {
 }
 
 // ─── 2. Meals (Firestore) ─────────────────────────────────────────
+// totalCalories is derived purely from Firebase onSnapshot — no local tracking
 let totalCalories = 0;
 
 async function addMeal() {
@@ -371,6 +372,7 @@ async function addMeal() {
       date: TODAY,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    // ✅ Clear inputs only — mealList & totalCalories updated by onSnapshot
     document.getElementById("foodName").value  = "";
     document.getElementById("calories").value  = "";
     showToast("🍽️ 飲食紀錄已儲存");
@@ -409,6 +411,8 @@ async function saveWorkout() {
       date: TODAY,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    // ✅ Clear inputs only — workoutList updated by onSnapshot
+    document.getElementById("workoutType").value = "";
     document.getElementById("workoutMove").value = "";
     document.getElementById("workoutSets").value = "";
     document.getElementById("workoutReps").value = "";
@@ -440,7 +444,7 @@ async function saveWeight() {
       date: TODAY,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    document.getElementById("weightDisplay").innerText = weight;
+    // ✅ Clear input only — weightDisplay is updated by onSnapshot listener
     document.getElementById("weight").value = "";
     showToast("⚖️ 體重已儲存");
   } catch(e) { console.error(e); showToast("❌ 儲存失敗：" + e.message); }
@@ -502,10 +506,12 @@ function loadCheckins() {
 async function submitAll() {
   const memberName = document.getElementById("memberName").value.trim();
   if (!memberName) { alert("請先輸入會員姓名"); return; }
+  // ✅ Read totalCalories from DOM value set by onSnapshot — not a local variable
+  const liveCalories = Number(document.getElementById("totalCalories").innerText) || 0;
   try {
     await db.collection("daily_summaries").doc(TODAY).set({
       memberName,
-      totalCalories,
+      totalCalories: liveCalories,
       date: TODAY,
       submittedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
