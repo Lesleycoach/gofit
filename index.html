@@ -165,193 +165,189 @@ grid-template-columns:1fr;
 </div>
 
 <div class="card">
+
 <h2>👤 會員資料</h2>
+
 <input id="memberName" placeholder="會員姓名">
-<select id="goal">
-<option value="">選擇健身目標</option>
-<option value="減脂">減脂</option>
-<option value="增肌">增肌</option>
-<option value="體態雕塑">體態雕塑</option>
-<option value="健康維持">健康維持</option>
+
+<select>
+<option>選擇健身目標</option>
+<option>減脂</option>
+<option>增肌</option>
+<option>體態雕塑</option>
+<option>健康維持</option>
 </select>
+
 </div>
 
 <div class="card">
+
 <h2>🍱 飲食紀錄</h2>
+
 <input id="foodName" placeholder="食物名稱">
+
 <input id="calories" type="number" placeholder="熱量 (kcal)">
+
 <button onclick="addMeal()">
 儲存飲食紀錄
 </button>
+
 <div id="mealList"></div>
+
 </div>
 
 <div class="card">
+
 <h2>💪 健身課表</h2>
-<select id="workoutType">
-<option value="">選擇今日課表</option>
-<option value="上肢訓練">上肢訓練</option>
-<option value="下肢訓練">下肢訓練</option>
-<option value="胸肌訓練">胸肌訓練</option>
-<option value="背肌訓練">背肌訓練</option>
-<option value="肩膀訓練">肩膀訓練</option>
-<option value="手臂訓練">手臂訓練</option>
-<option value="腿部訓練">腿部訓練</option>
-<option value="核心訓練">核心訓練</option>
-<option value="全身循環訓練">全身循環訓練</option>
+
+<select>
+
+<option>選擇今日課表</option>
+<option>上肢訓練</option>
+<option>下肢訓練</option>
+<option>胸肌訓練</option>
+<option>背肌訓練</option>
+<option>肩膀訓練</option>
+<option>手臂訓練</option>
+<option>腿部訓練</option>
+<option>核心訓練</option>
+<option>全身循環訓練</option>
+
 </select>
-<input id="exerciseName" placeholder="訓練動作">
-<input id="sets" type="number" placeholder="組數">
-<input id="reps" type="number" placeholder="次數">
-<button onclick="saveWorkout()">
-儲存今日訓練
+
+<input placeholder="訓練動作">
+
+<input type="number" placeholder="組數">
+
+<input type="number" placeholder="次數">
+
+<button>
+完成今日訓練
 </button>
-<div id="workoutList"></div>
+
 </div>
 
 <div class="card">
+
 <h2>⚖️ 體重追蹤</h2>
+
 <input
 id="weight"
 type="number"
 step="0.1"
 placeholder="目前體重 (kg)">
+
 <button onclick="saveWeight()">
 儲存體重
 </button>
+
 <div id="weightList"></div>
+
 </div>
 
 <div class="card">
+
 <h2>📅 每日打卡</h2>
+
 <button onclick="dailyCheckin()">
 今日打卡
 </button>
+
 <div id="checkinList"></div>
 
 <br><br>
 
-<button onclick="submitAll()" style="background:#8A6F5A;">
+<button onclick="submitAll()">
 送出今日紀錄
 </button>
+
 </div>
 
 </div>
 
 <script>
-// 全域變數
+
 let totalCalories = 0;
 let streak = 0;
-let currentWeight = 0;
-let mealsArray = [];      // 儲存今日所有飲食的陣列
-let workoutsArray = [];   // 儲存今日所有健身課表的陣列
-let hasCheckedIn = false; // 紀錄今日是否已點擊打卡
 
 function addMeal(){
-    const food = document.getElementById("foodName").value;
-    const calories = Number(document.getElementById("calories").value);
 
-    if(!food || !calories){
-        alert("請輸入食物名稱與熱量");
-        return;
-    }
+const food=document.getElementById("foodName").value;
+const calories=Number(document.getElementById("calories").value);
 
-    totalCalories += calories;
-    document.getElementById("totalCalories").innerText = totalCalories;
-
-    mealsArray.push({
-        foodName: food,
-        calories: calories
-    });
-
-    document.getElementById("mealList").innerHTML += `
-    <div class="record">
-    🍽️ ${food} ｜ ${calories} kcal
-    </div>
-    `;
-
-    document.getElementById("foodName").value = "";
-    document.getElementById("calories").value = "";
+if(!food || !calories){
+alert("請輸入食物名稱與熱量");
+return;
 }
 
-function saveWorkout(){
-    const type = document.getElementById("workoutType").value;
-    const exercise = document.getElementById("exerciseName").value;
-    const sets = Number(document.getElementById("sets").value);
-    const reps = Number(document.getElementById("reps").value);
+totalCalories += calories;
 
-    if(!type || !exercise || !sets || !reps){
-        alert("請完整填寫今日課表、訓練動作、組數與次數");
-        return;
-    }
+document.getElementById("totalCalories").innerText=totalCalories;
 
-    workoutsArray.push({
-        workoutType: type,
-        exerciseName: exercise,
-        sets: sets,
-        reps: reps
-    });
+document.getElementById("mealList").innerHTML += `
+<div class="record">
+🍽️ ${food} ｜ ${calories} kcal
+</div>
+`;
 
-    document.getElementById("workoutList").innerHTML += `
-    <div class="record">
-    💪 ${type} - ${exercise} ｜ ${sets} 組 × ${reps} 次
-    </div>
-    `;
-
-    document.getElementById("exerciseName").value = "";
-    document.getElementById("sets").value = "";
-    document.getElementById("reps").value = "";
+document.getElementById("foodName").value="";
+document.getElementById("calories").value="";
 }
 
 function saveWeight(){
-    const weight = document.getElementById("weight").value;
 
-    if(!weight) {
-        alert("請輸入體重");
-        return;
-    }
+const weight=document.getElementById("weight").value;
 
-    currentWeight = Number(weight);
-    document.getElementById("weightDisplay").innerText = currentWeight;
+if(!weight)return;
 
-    document.getElementById("weightList").innerHTML += `
-    <div class="record">
-    ⚖️ ${new Date().toLocaleDateString()} ｜ ${currentWeight} kg
-    </div>
-    `;
+document.getElementById("weightDisplay").innerText=weight;
 
-    document.getElementById("weight").value = "";
+document.getElementById("weightList").innerHTML += `
+<div class="record">
+⚖️ ${new Date().toLocaleDateString()} ｜ ${weight} kg
+</div>
+`;
+
+document.getElementById("weight").value="";
 }
 
-// 每日打卡控制（包含重複打卡提示語防呆）
 function dailyCheckin(){
-    if(hasCheckedIn){
-        alert("⚠️ 您先前已經成功打卡囉！一天只能打卡一次。");
-        return;
-    }
-    
-    streak++;
-    hasCheckedIn = true;
 
-    document.getElementById("streak").innerText = streak;
+streak++;
 
-    document.getElementById("checkinList").innerHTML += `
-    <div class="record">
-    ✅ ${new Date().toLocaleString()} - 打卡成功
-    </div>
-    `;
-    
-    alert("🎉 今日打卡成功！太棒了，請繼續保持！");
+document.getElementById("streak").innerText=streak;
+
+document.getElementById("checkinList").innerHTML += `
+<div class="record">
+✅ ${new Date().toLocaleString()}
+</div>
+`;
+
 }
 
-// 串接 Firebase：打包所有數據並確保安全寫入 Firestore
-async function submitAll(){
-    const memberName = document.getElementById("memberName").value;
-    const goal = document.getElementById("goal").value;
+function submitAll(){
 
-    if(!memberName){
-        alert("請先輸入會員姓名");
-        return;
-    }
+const memberName=
+document.getElementById("memberName").value;
 
-    // 安全打包：即使沒填，也確保送出正確的空陣列或預設值，不
+if(!memberName){
+
+alert("請先輸入會員姓名");
+
+return;
+}
+
+alert(
+`✅ 今日紀錄已送出
+
+會員姓名：${memberName}
+
+感謝您的紀錄，持續保持運動習慣！`
+);
+
+}
+
+</script>
+
+</body>
+</html>
